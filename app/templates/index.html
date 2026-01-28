@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Greek Payroll Calculator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { padding-top: 50px; background-color: #f8f9fa; }
+        .card { box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .result-card { border-left: 5px solid #007bff; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div id="calculator-view">
+        <h2 class="mb-4 text-primary">🇬🇷 Калькулятор Греческой Зарплаты</h2>
+        <div class="card p-4">
+            <h5 class="card-title">Введите данные для расчета</h5>
+            <form id="payroll-form">
+                <div class="mb-3">
+                    <label for="grossSalary" class="form-label">Брутто-зарплата (€)</label>
+                    <input type="number" step="0.01" class="form-control" id="grossSalary" required placeholder="Например, 1300.0">
+                </div>
+                <div class="mb-3">
+                    <label for="contractType" class="form-label">Тип контракта</label>
+                    <select class="form-select" id="contractType" required>
+                        <option value="full-time" selected>Full-time</option>
+                        <option value="part-time">Part-time</option>
+                        <option value="freelance">Freelance</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Рассчитать</button>
+            </form>
+            <div id="alertMessage" class="mt-3 alert alert-danger d-none" role="alert"></div>
+        </div>
+    </div>
+
+    <div id="result-view" class="mt-5 d-none">
+        <h2 class="mb-4">📋 Результаты расчета</h2>
+        <div id="result-content" class="row"></div>
+        <button id="back-button" class="btn btn-secondary mt-4">← Назад к калькулятору</button>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const form = document.getElementById('payroll-form');
+const calculatorView = document.getElementById('calculator-view');
+const resultView = document.getElementById('result-view');
+const resultContent = document.getElementById('result-content');
+const backButton = document.getElementById('back-button');
+const alertMessage = document.getElementById('alertMessage');
+
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    alertMessage.classList.add('d-none');
+
+    const grossSalary = document.getElementById('grossSalary').value;
+    const contractType = document.getElementById('contractType').value;
+
+    const data = { gross_salary: parseFloat(grossSalary), contract_type: contractType };
+
+    try {
+        const response = await fetch('/api/payroll', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+        const result = await response.json();
+
+        if (!response.ok) {
+            alertMessage.textContent = result.error || 'Ошибка при расчете.';
+            alertMessage.classList.remove('d-none');
+            return;
+        }
+
+        displayResults(result);
+
+    } catch (error) {
+        alertMessage.textContent = 'Не удалось подключиться к серверу.';
+        alertMessage.classList.remove('d-none');
+        console.error(error);
+    }
+});
+
+function displayResults(data) {
+    resultContent.innerHTML = '';
+
+    const keysInOrder = [
+        "Gross Salary (€)", 
+        "EFKA Contribution (€)", 
+        "Income Tax (€)", 
+        "Vacation Pay Accrual (€)", 
+        "Sick Pay Accrual (€)", 
+        "Net Salary (€)"
+    ];
+
+    keysInOrder.forEach(key => {
+        if (data.hasOwnProperty(key)) {
+            const formattedValue = new Intl.NumberFormat('el-GR', { style: 'currency', currency: 'EUR' }).format(data[key]);
+            let colorClass = 'text-dark';
+            if (key === 'Net Salary (€)') colorClass = 'text-success';
+            else if (key === 'EFKA Contribution (€)' || key === 'Income Tax (€)') colorClass = 'text-danger';
+            else if (key === 'Vacation Pay Accrual (€)' || key === 'Sick Pay Accrual (€)') colorClass = 'text-info';
+
+            const cardHtml = `
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card result-card h-100">
+                        <div class="card-body">
+                            <p class="card-text mb-1">${key.replace(' (€)', '')}</p>
+                            <h4 class="card-title ${colorClass}">${formattedValue}</h4>
+                        </div>
+                    </div>
+                </div>
+            `;
+            resultContent.insertAdjacentHTML('beforeend', cardHtml);
+        }
+    });
+
+    calculatorView.classList.add('d-none');
+    resultView.classList.remove('d-none');
+}
+
+backButton.addEventListener('click', () => {
+    calculatorView.classList.remove('d-none');
+    resultView.classList.add('d-none');
+    resultContent.innerHTML = '';
+    alertMessage.classList.add('d-none');
+});
+</script>
+</body>
+</html>

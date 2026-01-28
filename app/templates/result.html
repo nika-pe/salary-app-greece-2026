@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Payroll Breakdown</title>
+</head>
+<body>
+    <h2>Payroll Breakdown</h2>
+
+    <!-- Карточки breakdown -->
+    <div style="display:flex; flex-wrap: wrap; gap: 10px; max-width: 600px; margin-bottom:20px;">
+
+        <div style="flex:1 1 45%; padding:10px; border:1px solid #ccc; border-radius:8px; background:#f9f9f9;">
+            <strong>Gross Salary:</strong> €{{ result.gross }}
+        </div>
+
+        <div style="flex:1 1 45%; padding:10px; border:1px solid #ccc; border-radius:8px; background:#e3f2fd;">
+            <strong>Adjusted Gross:</strong> €{{ result.adjusted_gross }}
+        </div>
+
+        <div style="flex:1 1 45%; padding:10px; border:1px solid #ccc; border-radius:8px; background:#ffebee;">
+            <strong>EFKA:</strong> €{{ result.efka }}
+        </div>
+
+        <div style="flex:1 1 45%; padding:10px; border:1px solid #ccc; border-radius:8px; background:#fff3e0;">
+            <strong>Tax:</strong> €{{ result.tax }}
+        </div>
+
+        <div style="flex:1 1 45%; padding:10px; border:1px solid #ccc; border-radius:8px; background:#e8f5e9;">
+            <strong>Vacation Pay:</strong> €{{ result.vacation_pay }}
+        </div>
+
+        <div style="flex:1 1 45%; padding:10px; border:1px solid #ccc; border-radius:8px; background:#f3e5f5;">
+            <strong>Sick Pay:</strong> €{{ result.sick_pay }}
+        </div>
+
+        <div style="flex:1 1 100%; padding:10px; border:2px solid #000; border-radius:8px; background:#c8e6c9;">
+            <strong>Net Salary:</strong> €{{ result.net }}
+        </div>
+
+    </div>
+
+    <!-- Canvas для диаграммы -->
+    <h3>Payroll Distribution</h3>
+    <canvas id="payrollChart" width="400" height="400"></canvas>
+
+    <br>
+    <a href="/" style="display:inline-block; margin-top:20px;">Back</a>
+
+    <!-- Подключение Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx = document.getElementById('payrollChart').getContext('2d');
+        const payrollChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['EFKA', 'Tax', 'Vacation Pay', 'Sick Pay', 'Net Salary'],
+                datasets: [{
+                    data: [
+                        {{ result.efka }},
+                        {{ result.tax }},
+                        {{ result.vacation_pay }},
+                        {{ result.sick_pay }},
+                        {{ result.net }}
+                    ],
+                    backgroundColor: [
+                        '#ff6384', // EFKA
+                        '#ffcd56', // Tax
+                        '#36a2eb', // Vacation
+                        '#9966ff', // Sick
+                        '#4bc0c0'  // Net
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
+
