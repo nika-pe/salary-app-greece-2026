@@ -6,62 +6,54 @@ from app.models.payroll import PayrollCalculator
 main_bp = Blueprint('main', __name__)
 DB_PATH = os.path.join(os.getcwd(), 'salary_agent.db')
 
-def init_db():
-    """Инициализация базы данных"""
+def get_db_connection():
     conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS calculations (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-            gross REAL,
-            net REAL,
-            contract_type TEXT
-        )
-    ''')
-    conn.commit()
-    conn.close()
-
-init_db()
+    conn.row_factory = sqlite3.Row
+    # Создаем таблицу со всеми бухгалтерскими колонками
+    conn.execute('''CREATE TABLE IF NOT EXISTS calculations 
+                   (id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, 
+                    gross REAL, 
+                    net REAL, 
+                    tax REAL, 
+                    efka REAL, 
+                    bonuses REAL,
+                    contract_type TEXT)''')
+    return conn
 
 @main_bp.route('/', methods=['GET'])
 def index():
-    return render_template('index.html')
-
-@main_bp.route('/dashboard', methods=['GET'])
-def dashboard():
-    """Просмотр истории расчетов"""
-    try:
-        conn = sqlite3.connect(DB_PATH)
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM calculations ORDER BY timestamp DESC LIMIT 10")
-        history = cursor.fetchall()
-        conn.close()
-        return render_template('dashboard.html', history=history)
-    except Exception as e:
-        return f"Database error: {e}", 500
+    conn = get_db_connection()
+    # Берем последние 3 записи
+    history = conn.execute("SELECT * FROM calculations ORDER BY timestamp DESC LIMIT 3").fetchall()
+    conn.close()
+    return render_template('index.html', history=history)
 
 @main_bp.route('/api/payroll', methods=['POST'])
 def payroll_api():
     try:
         data = request.get_json()
-        gross_salary = float(data['gross_salary'])
-        contract_type = data.get('contract_type', 'private')
+        gross_salary = float(data.get('gross_salary', 0))
+        contract_type = data.get('contract_type', 'full-time')
 
         calculator = PayrollCalculator(gross_salary, contract_type)
         result = calculator.calculate_net()
 
-        # Сохранение в SQLite
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        cursor.execute(
-            "INSERT INTO calculations (gross, net, contract_type) VALUES (?, ?, ?)",
-            (gross_salary, result.get('net_salary'), contract_type)
+        conn = get_db_connection()
+        conn.execute('''
+            INSERT INTO calculations (gross, net, tax, efka, bonuses, contract_type) 
+            VALUES (?, ?, ?, ?, ?, ?)''', 
+            (
+                result["Gross Salary (€)"], 
+                result["Net Salary (€)"], 
+                result["Income Tax (€)"], 
+                result["EFKA Contribution (€)"],
+                result["Vacation Pay Accrual (€)"] + result["Sick Pay Accrual (€)"],
+                result["Contract Type"]
+            )
         )
         conn.commit()
         conn.close()
-
         return jsonify(result)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
