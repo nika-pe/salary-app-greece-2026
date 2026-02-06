@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>📋 Список сотрудников</h2>
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Имя</th>
+                <th>Оклад</th>
+                <th>Возраст</th>
+                <th>Статус</th>
+                <th>Действие</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for emp in employees %}
+            <tr class="{{ 'table-light' if not emp.is_active else '' }}">
+                <td>{{ emp.name }}</td>
+                <td>{{ emp.gross_salary }}€</td>
+                <td>{{ emp.age }}</td>
+                <td>{{ '✅ Работает' if emp.is_active else '❌ Уволен' }}</td>
+                <td>
+                    <form action="{{ url_for('toggle_employee', id=emp.id) }}" method="POST">
+                        <button class="btn btn-sm btn-outline-secondary">Сменить статус</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

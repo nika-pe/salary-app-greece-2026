@@ -2,18 +2,12 @@
 <html lang="el">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GR Salary Agent Pro</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background-color: #f0f2f5; font-family: 'Segoe UI', Tahoma, sans-serif; padding-top: 30px; }
-        .main-card { border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); background: white; padding: 30px; border: 1px solid #e0e0e0; }
-        .header-title { text-align: center; font-weight: bold; color: #333; margin-bottom: 25px; }
-        .btn-calculate { background-color: #0d6efd; border: none; font-weight: bold; padding: 12px; }
-        .analysis-section { margin-top: 25px; border-top: 1px solid #eee; padding-top: 20px; }
-        .detail-row { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.95rem; }
-        .total-year-box { background-color: #f8f9fa; border-radius: 8px; padding: 15px; text-align: center; margin: 20px 0; border: 1px solid #dee2e6; }
-        .net-amount { font-size: 1.7rem; font-weight: bold; color: #198754; text-align: center; }
+        body { background-color: #f0f2f5; font-family: 'Segoe UI', sans-serif; padding-top: 30px; }
+        .main-card { border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); background: white; padding: 30px; }
+        .net-amount { font-size: 2rem; font-weight: bold; color: #198754; text-align: center; }
         .history-table { background: white; border-radius: 8px; padding: 20px; margin-top: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
     </style>
 </head>
@@ -21,68 +15,46 @@
 
 <div class="container">
     <div class="row justify-content-center">
-        <div class="col-md-6">
+        <div class="col-md-7">
             <div class="main-card">
-                <h2 class="header-title">GR Salary Agent Pro</h2>
-                
+                <h2 class="text-center fw-bold mb-4">GR Salary Agent Pro</h2>
                 <form id="calc-form">
-                    <div class="mb-4">
-                        <label class="form-label d-block text-center fw-bold">Μηνιαίος Μικτός Μισθός (€)</label>
-                        <input type="number" step="0.01" id="gross" class="form-control form-control-lg text-center" placeholder="Введите сумму" required>
+                    <div class="mb-4 text-center">
+                        <label class="form-label fw-bold">Μηνιαίος Μικτός Μισθός (€)</label>
+                        <input type="number" step="0.01" id="gross" class="form-control form-control-lg text-center" placeholder="2000" required>
                     </div>
-
                     <div class="row mb-4">
-                        <div class="col-6">
-                            <label class="form-label small fw-bold">Ηλικία (Возраст)</label>
-                            <input type="number" id="age" class="form-control" value="26">
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label small fw-bold">Παιδιά (Дети)</label>
-                            <input type="number" id="children" class="form-control" value="0">
-                        </div>
+                        <div class="col-6"><label class="small fw-bold">Ηλικία</label><input type="number" id="age" class="form-control" value="26"></div>
+                        <div class="col-6"><label class="small fw-bold">Παιδιά</label><input type="number" id="children" class="form-control" value="0"></div>
                     </div>
-
-                    <button type="submit" class="btn btn-primary btn-calculate w-100 text-uppercase">ΥΠΟΛΟΓΙΣΜΟΣ</button>
+                    <button type="submit" class="btn btn-primary w-100 fw-bold py-2">ΥΠΟΛΟΓΙΣΜΟΣ</button>
                 </form>
 
-                <div id="result-area" class="d-none analysis-section">
-                    <h6 class="text-center text-muted mb-3">Ανάλυση / Детализация</h6>
-                    <div class="detail-row"><span>Ακαθάριστα:</span> <span id="res-gross"></span></div>
-                    <div class="detail-row text-secondary"><span>ΕΦΚΑ (16%):</span> <span id="res-efka"></span></div>
-                    <div class="detail-row text-secondary"><span>Φόρος (<span id="res-rate"></span>%):</span> <span id="res-tax"></span></div>
-                    <div class="detail-row text-secondary"><span>Επιδόματα:</span> <span id="res-bonuses"></span></div>
-                    
-                    <div class="total-year-box">
-                        <small class="text-muted text-uppercase">ΣΥΝΟΛΟ ΕΤΟΥΣ (ЗА ГОД)</small>
-                        <h4 id="res-year" class="text-primary fw-bold m-0"></h4>
-                    </div>
-
-                    <div class="text-center">
-                        <small class="text-muted text-uppercase">ΚΑΘΑΡΑ (НА РУКИ):</small>
+                <div id="result-area" class="d-none mt-4 pt-4 border-top">
+                    <div class="d-flex justify-content-between mb-2"><span>Gross:</span> <span id="res-gross"></span></div>
+                    <div class="d-flex justify-content-between mb-2 text-secondary"><span>Tax (<span id="res-rate"></span>%):</span> <span id="res-tax"></span></div>
+                    <div class="mt-3 text-center">
+                        <small class="text-muted text-uppercase">ΚΑΘΑΡΑ (NET PER MONTH):</small>
                         <div id="res-net" class="net-amount"></div>
                     </div>
-                    
-                    <button onclick="location.reload()" class="btn btn-link w-100 text-decoration-none mt-2 text-muted small">Обновить реестр</button>
                 </div>
             </div>
 
             <div class="history-table">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="m-0 fw-bold">📋 Μητρώο / Реестр</h5>
+                    <h5 class="m-0 fw-bold">📋 Πρόσφατοι Υπολογισμοί / История</h5>
                     <a href="/api/export-excel" class="btn btn-outline-success btn-sm">Excel Export</a>
                 </div>
-                <table class="table table-sm">
-                    <thead>
-                        <tr class="table-light">
-                            <th>Gross</th><th>Tax</th><th>Net</th>
-                        </tr>
+                <table class="table table-hover" id="history-table">
+                    <thead class="table-light">
+                        <tr><th>Gross</th><th>Tax</th><th>Net</th></tr>
                     </thead>
                     <tbody>
                         {% for r in history %}
                         <tr>
-                            <td>{{ "%.2f"|format(r.gross) }}€</td>
-                            <td class="text-danger">-{{ "%.2f"|format(r.tax) }}€</td>
-                            <td class="fw-bold">{{ "%.2f"|format(r.net) }}€</td>
+                            <td>{{ "%.2f"|format(r.gross_salary or 0) }}€</td>
+                            <td class="text-danger">-{{ "%.2f"|format(r.tax or 0) }}€</td>
+                            <td class="fw-bold text-success">{{ "%.2f"|format(r.net or 0) }}€</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -109,14 +81,23 @@ document.getElementById('calc-form').addEventListener('submit', async (e) => {
     
     const res = await response.json();
 
+    // 1. Показываем результат в главной карточке
     document.getElementById('result-area').classList.remove('d-none');
     document.getElementById('res-gross').innerText = payload.gross_salary + ' €';
-    document.getElementById('res-efka').innerText = '-' + res.efka + ' €';
     document.getElementById('res-tax').innerText = '-' + res.tax + ' €';
     document.getElementById('res-rate').innerText = res.tax_rate;
-    document.getElementById('res-bonuses').innerText = '+' + (payload.gross_salary * 0.17).toFixed(2) + ' €';
     document.getElementById('res-net').innerText = res.net + ' €';
-    document.getElementById('res-year').innerText = (res.net * 14).toFixed(2) + ' €';
+
+    // 2. LIVE UPDATE: Добавляем новую строку в таблицу сразу
+    const tableBody = document.querySelector('#history-table tbody');
+    const newRow = `
+        <tr>
+            <td>${parseFloat(payload.gross_salary).toFixed(2)}€</td>
+            <td class="text-danger">-${res.tax.toFixed(2)}€</td>
+            <td class="fw-bold text-success">${res.net.toFixed(2)}€</td>
+        </tr>
+    `;
+    tableBody.insertAdjacentHTML('afterbegin', newRow);
 });
 </script>
 </body>
