@@ -11,15 +11,16 @@ class PayrollCalculator:
         return round(self.gross * 0.1387, 2)
 
     def calculate_income_tax(self, taxable_monthly):
-        """Расчет прогрессивного налога с учетом налогового вычета"""
+        """Расчет прогрессивного налога с учетом налогового вычета (2026)"""
         annual_taxable = taxable_monthly * self.months
         
-        # Налоговые чешуйки (brackets)
+        # Налоговые чешуйки (brackets) 2026
         brackets = [
             (10000, 0.09),
-            (20000, 0.22),
-            (30000, 0.28),
-            (40000, 0.36),
+            (20000, 0.20),
+            (30000, 0.26),
+            (40000, 0.34),
+            (60000, 0.39),
             (float('inf'), 0.44)
         ]
         
@@ -34,10 +35,29 @@ class PayrollCalculator:
             else:
                 break
         
-        # Налоговая скидка (Tax Credit) зависит от детей
-        # Примерные значения: 0 детей = 777€, 1 реб = 810€, 2 реб = 900€
-        credits = {0: 777, 1: 810, 2: 900, 3: 1120}
-        tax_credit = credits.get(self.children, 1340) # 1340 для 4+ детей
+        # Налоговая скидка (Tax Credit) 2026
+        # 0 детей = 777€
+        # 1 реб = 900€
+        # 2 реб = 1120€
+        # 3 реб = 1340€
+        # 4 реб = 1580€
+        # 5+ реб = 1780€ + 220€ за каждого следующего
+        
+        if self.children == 0:
+            tax_credit = 777
+        elif self.children == 1:
+            tax_credit = 900
+        elif self.children == 2:
+            tax_credit = 1120
+        elif self.children == 3:
+            tax_credit = 1340
+        elif self.children == 4:
+            tax_credit = 1580
+        else:
+            # 5 детей = 1780, далее +220 за каждого
+            base_credit = 1780
+            extra_children = self.children - 5
+            tax_credit = base_credit + (extra_children * 220)
         
         # Итоговый годовой налог не может быть меньше 0
         final_annual_tax = max(0, total_annual_tax - tax_credit)
